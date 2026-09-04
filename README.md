@@ -1,4 +1,4 @@
-Reinforcement Learning – DQN & PPO on Custom FrozenLake
+Reinforcement Learning: DQN & PPO on Custom FrozenLake
 
 This project implements Deep Q-Network (DQN) and Proximal Policy Optimization (PPO) to solve a custom FrozenLake environment provided as part of the course
 “Introduction to Deep Reinforcement Learning” at the Technical University of Munich (TUM).
