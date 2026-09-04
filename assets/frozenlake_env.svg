@@ -1,0 +1,88 @@
+<svg viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <style>
+      .grid-line { stroke: #b8c4cc; stroke-width: 1; }
+      .path-cell { fill: #eef4f8; }
+      .ice-cell { fill: #4fb3e0; }
+      .treasure-cell { fill: #f5c542; }
+      .label { font-size: 11px; fill: #445; }
+    </style>
+  </defs>
+
+  <!-- 7 rows x 14 cols, cell size 50 -->
+  <g transform="translate(30,20)">
+    <!-- background path cells -->
+    <rect x="0" y="0" width="700" height="350" class="path-cell"/>
+
+    <!-- ice / lake-breakpoint cells (negative terminal states) -->
+    <!-- row 0: cols 0-5 -->
+    <rect x="0"   y="0"   width="300" height="50" class="ice-cell"/>
+    <!-- row 1: cols 0-4 -->
+    <rect x="0"   y="50"  width="250" height="50" class="ice-cell"/>
+    <!-- row 2: cols 0-3 -->
+    <rect x="0"   y="100" width="200" height="50" class="ice-cell"/>
+    <!-- row 3: col 5 only -->
+    <rect x="250" y="150" width="50"  height="50" class="ice-cell"/>
+    <!-- row 4: cols 0-3 -->
+    <rect x="0"   y="200" width="200" height="50" class="ice-cell"/>
+    <!-- row 5: cols 0-4 -->
+    <rect x="0"   y="250" width="250" height="50" class="ice-cell"/>
+    <!-- row 6: cols 0-5 -->
+    <rect x="0"   y="300" width="300" height="50" class="ice-cell"/>
+
+    <!-- treasures (positive terminal states) -->
+    <rect x="0"   y="150" width="50" height="50" class="treasure-cell"/>   <!-- row3 col0 -->
+    <rect x="650" y="0"   width="50" height="50" class="treasure-cell"/>   <!-- row0 col13 -->
+    <rect x="650" y="300" width="50" height="50" class="treasure-cell"/>  <!-- row6 col13 -->
+
+    <!-- grid lines -->
+    <g class="grid-line">
+      <!-- verticals -->
+      <line x1="0" y1="0" x2="0" y2="350"/>
+      <line x1="50" y1="0" x2="50" y2="350"/>
+      <line x1="100" y1="0" x2="100" y2="350"/>
+      <line x1="150" y1="0" x2="150" y2="350"/>
+      <line x1="200" y1="0" x2="200" y2="350"/>
+      <line x1="250" y1="0" x2="250" y2="350"/>
+      <line x1="300" y1="0" x2="300" y2="350"/>
+      <line x1="350" y1="0" x2="350" y2="350"/>
+      <line x1="400" y1="0" x2="400" y2="350"/>
+      <line x1="450" y1="0" x2="450" y2="350"/>
+      <line x1="500" y1="0" x2="500" y2="350"/>
+      <line x1="550" y1="0" x2="550" y2="350"/>
+      <line x1="600" y1="0" x2="600" y2="350"/>
+      <line x1="650" y1="0" x2="650" y2="350"/>
+      <line x1="700" y1="0" x2="700" y2="350"/>
+      <!-- horizontals -->
+      <line x1="0" y1="0" x2="700" y2="0"/>
+      <line x1="0" y1="50" x2="700" y2="50"/>
+      <line x1="0" y1="100" x2="700" y2="100"/>
+      <line x1="0" y1="150" x2="700" y2="150"/>
+      <line x1="0" y1="200" x2="700" y2="200"/>
+      <line x1="0" y1="250" x2="700" y2="250"/>
+      <line x1="0" y1="300" x2="700" y2="300"/>
+      <line x1="0" y1="350" x2="700" y2="350"/>
+    </g>
+
+    <!-- agent start marker (row4, col9) -->
+    <circle cx="475" cy="225" r="12" fill="#2f5233"/>
+    <text x="475" y="229" text-anchor="middle" font-size="13" fill="#fff" font-weight="bold">A</text>
+
+    <!-- treasure labels -->
+    <text x="25" y="180" text-anchor="middle" class="label" font-weight="bold">+6.0</text>
+    <text x="675" y="30" text-anchor="middle" class="label" font-weight="bold">+5.0</text>
+    <text x="675" y="330" text-anchor="middle" class="label" font-weight="bold">+5.0</text>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(30,385)">
+    <rect x="0" y="0" width="16" height="16" class="ice-cell"/>
+    <text x="22" y="13" class="label">Lake breakpoint (terminal, reward -3.0)</text>
+
+    <rect x="300" y="0" width="16" height="16" class="treasure-cell"/>
+    <text x="322" y="13" class="label">Treasure (terminal, reward +5.0 / +6.0)</text>
+
+    <circle cx="558" cy="8" r="8" fill="#2f5233"/>
+    <text x="572" y="13" class="label">Agent start state</text>
+  </g>
+</svg>

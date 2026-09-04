@@ -1,67 +1,66 @@
-Reinforcement Learning: DQN & PPO on Custom FrozenLake
+# Reinforcement Learning: DQN and PPO on Custom FrozenLake
 
-This project implements Deep Q-Network (DQN) and Proximal Policy Optimization (PPO) to solve a custom FrozenLake environment provided as part of the course
-“Introduction to Deep Reinforcement Learning” at the Technical University of Munich (TUM).
+This repository contains from-scratch implementations of Deep Q-Network (DQN) and Proximal Policy Optimization (PPO) for a custom Gym-based FrozenLake environment. The project was developed as part of the *Introduction to Deep Reinforcement Learning* course at the Technical University of Munich.
 
-The task was to train an agent to find the optimal path to a treasure while avoiding terminal failure states, using only self-implemented deep reinforcement learning algorithms.
+The objective is to learn an optimal path to a treasure while avoiding terminal failure states under a non-uniform, path-dependent reward structure. The project focuses on implementing and comparing value-based and policy-gradient reinforcement learning methods rather than relying on pre-built RL libraries.
 
-📌 Task Overview
+## Environment
 
-The environment is a modified FrozenLake grid world (Gym-based) with:
+![Custom FrozenLake environment](assets/frozenlake_env.svg)
 
-7 state variables
+The custom FrozenLake environment contains:
 
-2 for the agent’s position
+- **Seven state variables**: two representing the agent's position, five influencing state-dependent rewards
+- **Four deterministic actions**: up, down, left, and right
+- **Three positive terminal states** representing treasures
+- **Multiple negative terminal states** representing lake breakpoints
+- A **non-uniform reward structure** that creates challenges for exploration and temporal credit assignment
 
-5 affecting the reward of entering a state
+## Technical Implementation
 
-4 deterministic actions: up, down, left, right
+### Deep Q-Network
 
-Terminal states:
+The DQN implementation extends a standard value-based agent with several techniques designed to improve learning stability and sample efficiency:
 
-3 positive reward states (treasures)
+- Double DQN targets to reduce Q-value overestimation
+- Dueling network architecture with separate value and advantage streams
+- Prioritized Experience Replay, implemented using a custom SumTree data structure
+- Stratified priority-based sampling with importance-sampling weights
+- Priority updates based on absolute temporal-difference errors
+- Separate online and target networks with periodic synchronization
+- Huber loss for robust temporal-difference learning
+- Global gradient clipping
+- Epsilon-greedy exploration with controlled decay
 
-multiple negative reward states (lake breakpoints)
+### Proximal Policy Optimization
 
-The reward structure is non-uniform and path-dependent, meaning not all optimal paths yield the same total reward, which makes exploration and credit assignment challenging (see reward heatmap in the task slides).
+The PPO implementation uses a separate actor–critic architecture and an on-policy training pipeline:
 
-🎯 Objectives (from the exam task)
+- Separate multilayer perceptrons for the policy and value functions
+- Generalized Advantage Estimation (GAE-λ) for lower-variance advantage estimates
+- Normalized advantages
+- PPO's clipped surrogate objective
+- Entropy regularization to encourage exploration
+- Mini-batch optimization over collected trajectories
+- Bootstrapped value estimates for truncated episodes
+- Multiple parallel actors for experience collection
+- Independent optimization of the actor and critic networks
 
-Implement DQN and PPO from scratch
+## Evaluation
 
-Train an agent to reach a treasure without falling into terminal failure states
+Both agents are evaluated using:
 
-Compare both algorithms with respect to:
+- Average episodic reward
+- Success rate
+- Convergence speed
+- Training stability
+- Sensitivity to hyperparameters and architecture choices
 
-convergence speed
+The comparison highlights the different behavior of an off-policy, value-based method with replay memory and an on-policy actor–critic method operating directly on collected trajectories.
 
-stability
+## Repository Structure
 
-final performance
-
-Analyse the influence of hyperparameters and architecture choices
-
-The examination consisted of:
-
-Algorithm implementation (DQN & PPO)
-
-Presentation + Q&A
-
-Technical report
-
-🧠 Algorithms Implemented
-DQN (Deep Q-Network)
-
-Value-based method using a neural network to approximate Q-values
-
-Trained via double dqn, dueling networks, prioritized replay and temporal-difference learning
-
-PPO (Proximal Policy Optimization)
-
-Policy-gradient method
-
-Uses clipped objective to ensure stable updates
-
-Advantage estimation for variance reduction
-
-Both agents were evaluated on their average episode reward and success rate.
+| File | Description |
+|---|---|
+| `DQN - Annotated Code.py` | Dueling Double DQN with Prioritized Experience Replay |
+| `PPO - Annotated Code.py` | PPO with GAE, entropy regularization, and parallel experience collection |
