@@ -3,6 +3,8 @@ import random
 import numpy as np
 import scipy.signal
 import tensorflow as tf
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 from keras.layers import Dense, Input
@@ -11,7 +13,7 @@ from environment import CustomFrozenLake  # Your custom env
 
 # Module configuration and hyperparameters 
 BASE_SEED = 1          # starting seed
-N_SEEDS = 1           # code runs over N_SEEDS seeds
+N_SEEDS = 5           # code runs over N_SEEDS seeds
 train_episodes = 500
 test_episodes = 50
 actors = 5

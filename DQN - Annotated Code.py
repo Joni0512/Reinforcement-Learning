@@ -14,24 +14,30 @@ Key features:
 """
 
 import os
-SEED = 0
-os.environ["PYTHONHASHSEED"] = str(SEED)
 os.environ["TF_DETERMINISTIC_OPS"] = "1"
 
 import random
-random.seed(SEED)
-
 import numpy as np
-np.random.seed(SEED)
-
 import tensorflow as tf
-tf.random.set_seed(SEED)
-
 from keras.models import Model
 from keras.layers import Dense, Input, Lambda
 from environment import CustomFrozenLake
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import gymnasium as gym
+
+# Seeds to run and plot
+BASE_SEED = 1
+N_SEEDS = 5
+
+def set_global_seed(seed):
+    """Reseed Python/NumPy/TensorFlow for a single run and clear the Keras graph."""
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    tf.keras.backend.clear_session()
 
 #Paths / output folders
 wd = os.getcwd()
@@ -566,14 +572,12 @@ class DQN_Agent:
 
         return loss_val
 
-# Entry point
-if __name__ == "__main__":
-    # State/action sizes come from CustomFrozenLake’s observation/action spaces
+def run_one_seed(seed_value, train_episodes=1000):
+    set_global_seed(seed_value)
+
     state_size = 7
     no_of_actions = 4
-    old_model_path = ''
 
-    # Hyperparameters grouped for clarity and easy sweeps
     agent_hyperparameters = {
         'gamma': 0.85,
         'epsilon': 1.0,
@@ -583,30 +587,60 @@ if __name__ == "__main__":
         'alpha': 5e-4,
         'huber_delta': 1.0,
         'target_model_time': 100,
-        'epsilon_decay_episode': 0.98,  # also read as 'epsilon_decay'
-
-        # PER params
+        'epsilon_decay_episode': 0.98,
         'per_alpha': 0.6,
         'per_beta_start': 0.4,
         'per_beta_increment': 2e-3,
         'per_eps': 1e-6,
         'priority_cap': 10.0,
-
-        # Early-only success boost
         'success_dup': 2,
         'success_priority_boost': 2.0,
         'success_boost_until_steps': 10_000,
     }
 
-    train_episodes = 1000
+    agent = DQN_Agent(state_size, no_of_actions, agent_hyperparameters, old_model_path='')
+    env = GymEnvironment('custom_frozen_DQN', save_folder, render=False, seed=seed_value)
 
-    # Create agent & environment
-    agent = DQN_Agent(state_size, no_of_actions, agent_hyperparameters, old_model_path)
-    environment_train = GymEnvironment('custom_frozen_DQN', save_folder, render=False, seed=SEED)
+    rewards = env.trainDQN(agent, train_episodes)
 
-    # Train (may early-stop on convergence)
-    _ = environment_train.trainDQN(agent, train_episodes)
-    if environment_train.last_early_stop_ep is not None:
-        print(f"CONVERGED at episode {environment_train.last_early_stop_ep}.")
-    else:
-        print("Did NOT converge within 1000 episodes.")
+    return {
+        "seed": seed_value,
+        "rewards": rewards,
+        "converged_at": env.last_early_stop_ep,
+    }
+
+
+# Entry point
+if __name__ == "__main__":
+    all_runs = []
+    for s in range(BASE_SEED, BASE_SEED + N_SEEDS):
+        print(f"\n=== Running seed {s} ===")
+        result = run_one_seed(s, train_episodes=1000)
+        all_runs.append(result)
+        if result["converged_at"] is not None:
+            print(f"Seed {s}: CONVERGED at episode {result['converged_at']}.")
+        else:
+            print(f"Seed {s}: did NOT converge within 1000 episodes.")
+
+    plt.figure(figsize=(11, 5))
+    for run in all_runs:
+        rewards = run["rewards"]
+        x = np.arange(1, len(rewards) + 1)
+        label = f"Seed {run['seed']}"
+        if run["converged_at"] is not None:
+            label += f" (converged ep {run['converged_at']})"
+        plt.plot(x, rewards, linewidth=1.2, label=label)
+
+    plt.title(f"DQN — Training Reward per Episode (Seeds {BASE_SEED}-{BASE_SEED + N_SEEDS - 1})")
+    plt.xlabel("Episode")
+    plt.ylabel("Reward")
+    plt.legend(fontsize=8)
+    plt.grid(True, alpha=0.3)
+
+    out_plot = os.path.join(save_folder, f"dqn_training_seeds_{BASE_SEED}-{BASE_SEED + N_SEEDS - 1}.png")
+    plt.savefig(out_plot, bbox_inches="tight", dpi=150)
+    plt.show()
+    print(f"Saved training plot to: {out_plot}")
+
+    n_converged = sum(1 for r in all_runs if r["converged_at"] is not None)
+    print(f"\n{n_converged}/{N_SEEDS} seeds converged.")
