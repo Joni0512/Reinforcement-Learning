@@ -1,66 +1,53 @@
-# Reinforcement Learning: DQN and PPO on Custom FrozenLake
+# Reinforcement Learning: DQN and PPO on a Custom FrozenLake
 
-This repository contains from-scratch implementations of Deep Q-Network (DQN) and Proximal Policy Optimization (PPO) for a custom Gym-based FrozenLake environment. The project was developed as part of the *Introduction to Deep Reinforcement Learning* course at the Technical University of Munich.
+From-scratch implementations of Deep Q-Network (DQN) and Proximal Policy Optimization (PPO) in TensorFlow/Keras on a custom Gym-based FrozenLake environment. Developed for the *Introduction to Deep Reinforcement Learning* course at the Technical University of Munich, building on the course template.
 
-The objective is to learn an optimal path to a treasure while avoiding terminal failure states under a non-uniform, path-dependent reward structure. The project focuses on implementing and comparing value-based and policy-gradient reinforcement learning methods rather than relying on pre-built RL libraries.
+**Highlights**
+- Dueling Double DQN with Prioritized Experience Replay, implemented with a custom SumTree
+- PPO with GAE, entropy regularization and parallel actors
+- DQN converged in 5/5 seed runs using the tuned configuration; PPO reached the optimal goal in ≥90% of test episodes for 3/5 seeds
 
 ## Environment
 
-![Custom FrozenLake environment](assets/frozenlake_env.svg)
+`environment.py` (course-provided, unmodified) defines a custom FrozenLake:
 
-The custom FrozenLake environment contains:
+- Seven state variables: two for the agent's position, five influencing state-dependent rewards
+- Four deterministic actions: up, down, left, right
+- Three positive terminal states (treasures) and multiple negative terminal states (lake breakpoints)
+- Non-uniform, path-dependent rewards that make exploration and credit assignment hard
 
-- **Seven state variables**: two representing the agent's position, five influencing state-dependent rewards
-- **Four deterministic actions**: up, down, left, and right
-- **Three positive terminal states** representing treasures
-- **Multiple negative terminal states** representing lake breakpoints
-- A **non-uniform reward structure** that creates challenges for exploration and temporal credit assignment
+## Implementation
 
-## Technical Implementation
+**DQN** (`DQN - Annotated Code.py`): Double DQN targets, dueling architecture, Prioritized Experience Replay (custom SumTree, stratified sampling, importance-sampling weights, priorities from absolute TD errors), separate online and target networks, Huber loss, gradient clipping, epsilon-greedy exploration with decay.
 
-### Deep Q-Network
+**PPO** (`PPO - Annotated Code.py`): separate actor and critic networks (two hidden layers, 64 units, ReLU), GAE-λ with normalized advantages, clipped surrogate objective, entropy bonus, mini-batch updates over multiple epochs, bootstrapped values for truncated episodes, parallel rollouts.
 
-The DQN implementation extends a standard value-based agent with several techniques designed to improve learning stability and sample efficiency:
+## Results
 
-- Double DQN targets to reduce Q-value overestimation
-- Dueling network architecture with separate value and advantage streams
-- Prioritized Experience Replay, implemented using a custom SumTree data structure
-- Stratified priority-based sampling with importance-sampling weights
-- Priority updates based on absolute temporal-difference errors
-- Separate online and target networks with periodic synchronization
-- Huber loss for robust temporal-difference learning
-- Global gradient clipping
-- Epsilon-greedy exploration with controlled decay
+**DQN.** 12 hyperparameter configurations (ε decay, ε_min, γ) were screened on seeds 0–9 over 1000 episodes. Lower γ and higher ε_min performed best, so lower γ values (down to 0.75) were added. The seven best configurations were then tested on seeds 0–50. Three of them (ε_min = 0.1; decay 0.98/γ = 0.8, decay 0.99/γ = 0.75, decay 0.98/γ = 0.85) converged in 90–95% of runs, and stayed consistently high on seeds 1–100. Huber loss was chosen over MSE because it limits the influence of large TD-error outliers, which matters with Prioritized Experience Replay. A reproducibility run with the best configuration (γ=0.85, ε_min=0.1, decay=0.98) converged in all 5 tested seeds, with early stopping between episodes 400–470.
 
-### Proximal Policy Optimization
+![DQN training reward across 5 seeds](assets/dqn_training_curve.png)
 
-The PPO implementation uses a separate actor–critic architecture and an on-policy training pipeline:
+**PPO.** The clipped objective with GAE was robust to hyperparameter changes. Instability (value-loss explosion, premature policy collapse) was resolved by an entropy bonus and gradient clipping on the critic. Across 5 test seeds (50 episodes each), 3 seeds reached the optimal goal in more than 45/50 episodes, 1 seed in 20–45, and 1 seed in fewer than 20.
 
-- Separate multilayer perceptrons for the policy and value functions
-- Generalized Advantage Estimation (GAE-λ) for lower-variance advantage estimates
-- Normalized advantages
-- PPO's clipped surrogate objective
-- Entropy regularization to encourage exploration
-- Mini-batch optimization over collected trajectories
-- Bootstrapped value estimates for truncated episodes
-- Multiple parallel actors for experience collection
-- Independent optimization of the actor and critic networks
+![PPO training and test reward, top seeds by score](assets/ppo_training_curve.png)
 
-## Evaluation
+**What did not help.** Reward shaping (Manhattan-distance penalty, both methods) and Bayesian optimization with Optuna (PPO; multiple days of compute, worse scores) were tested and dropped.
 
-Both agents are evaluated using:
+## Run
 
-- Average episodic reward
-- Success rate
-- Convergence speed
-- Training stability
-- Sensitivity to hyperparameters and architecture choices
+```bash
+python3 -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python "DQN - Annotated Code.py"
+python "PPO - Annotated Code.py"
+```
 
-The comparison highlights the different behavior of an off-policy, value-based method with replay memory and an on-policy actor–critic method operating directly on collected trajectories.
-
-## Repository Structure
+## Files
 
 | File | Description |
 |---|---|
+| `environment.py` | Custom Gym FrozenLake environment (course-provided) |
 | `DQN - Annotated Code.py` | Dueling Double DQN with Prioritized Experience Replay |
-| `PPO - Annotated Code.py` | PPO with GAE, entropy regularization, and parallel experience collection |
+| `PPO - Annotated Code.py` | PPO with GAE, entropy regularization and parallel rollouts |
