@@ -9,7 +9,7 @@ From-scratch implementations of Deep Q-Network (DQN) and Proximal Policy Optimiz
 
 ## Environment
 
-`environment.py` (course-provided, unmodified) defines a custom FrozenLake:
+`environment.py` (provided by the course and unmodified) defines a custom FrozenLake:
 
 - Seven state variables: two for the agent's position, five influencing state-dependent rewards
 - Four deterministic actions: up, down, left, right
@@ -34,7 +34,7 @@ From-scratch implementations of Deep Q-Network (DQN) and Proximal Policy Optimiz
 
 **What did not help.** Reward shaping (Manhattan-distance penalty, both methods) and Bayesian optimization with Optuna (PPO; multiple days of compute, worse scores) were tested and dropped.
 
-## Run
+## How to run the code
 
 ```bash
 python3 -m venv venv
